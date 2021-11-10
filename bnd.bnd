@@ -1,0 +1,4 @@
+Bundle-Name: configuration-api-sample
+Bundle-SymbolicName: com.liferay.simplify.configuration.api.sample
+Bundle-Version: 1.0.0
+Export-Package: com.liferay.simplify.configuration.api.sample.constants
