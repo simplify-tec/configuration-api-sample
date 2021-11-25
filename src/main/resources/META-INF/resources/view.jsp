@@ -1,5 +1,7 @@
 <%@ include file="/init.jsp" %>
 
-<p>
-	<b><liferay-ui:message key="welcomecard.caption"/></b>
-</p>
+<div class="welcome-card">
+    <div class="welcome-card-wrapper ${size} bg-${backgroundColor}">
+        <h2>${title}</h2>
+    </div>
+</div>

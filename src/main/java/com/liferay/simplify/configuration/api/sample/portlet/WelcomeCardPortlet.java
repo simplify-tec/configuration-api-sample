@@ -1,17 +1,27 @@
 package com.liferay.simplify.configuration.api.sample.portlet;
 
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.simplify.configuration.api.sample.configuration.WelcomeCardPortletConfiguration;
 import com.liferay.simplify.configuration.api.sample.constants.WelcomeCardPortletKeys;
 
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import java.io.IOException;
+import java.util.Map;
 
 import javax.portlet.Portlet;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 
 /**
  * @author pedro
  */
 @Component(
+	configurationPid = "com.liferay.simplify.configuration.api.sample.configuration.WelcomeCardPortletConfiguration",
 	immediate = true,
 	property = {
 		"com.liferay.portlet.display-category=category.sample",
@@ -27,4 +37,47 @@ import org.osgi.service.component.annotations.Component;
 	service = Portlet.class
 )
 public class WelcomeCardPortlet extends MVCPortlet {
+	
+	@Override
+	public void render(RenderRequest renderRequest, RenderResponse renderResponse)
+			throws IOException, PortletException {
+		
+		String title = _welcomeCardPortletConfiguration.title();
+		
+		String backgroundColor = _welcomeCardPortletConfiguration.backgroundColor();
+		
+		String size = _welcomeCardPortletConfiguration.size();
+		size = formatSize(size);
+		
+		renderRequest.setAttribute("title", title);
+		renderRequest.setAttribute("backgroundColor", backgroundColor);
+		renderRequest.setAttribute("size", size);
+		
+		super.render(renderRequest, renderResponse);
+	}
+	
+	private static String formatSize(String size) {
+		if ("large".equals(size)) {
+			return "lg";
+		} else if ("small".equals(size)) {
+			return "sm";
+		} else {
+			return "md";
+		}
+	}
+	
+	/*
+	 * The method used to intantiate our configuration field 
+	 */
+    @Activate
+    @Modified
+    protected void activate(Map<Object, Object> properties) {
+    	_welcomeCardPortletConfiguration = ConfigurableUtil.createConfigurable(
+            		WelcomeCardPortletConfiguration.class, properties);
+    }
+
+    /*
+     * Field used to access configuration values
+     */
+    private volatile WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration;
 }

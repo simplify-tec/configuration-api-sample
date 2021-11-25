@@ -1,3 +1,15 @@
+- [Configuration API Sample](#configuration-api-sample)
+  - [Configuration API](#configuration-api)
+  - [The project](#the-project)
+  - [How to create a configuration](#how-to-create-a-configuration)
+    - [The annotations](#the-annotations)
+  - [Calling the configuration on the portlet](#calling-the-configuration-on-the-portlet)
+  - [Creating portlet configuration](#creating-portlet-configuration)
+    - [Configuration Action](#configuration-action)
+    - [Portlet Configuration JSP](#portlet-configuration-jsp)
+    - [Using Portlet Configuration on the portlet](#using-portlet-configuration-on-the-portlet)
+    - [Using system settings Configuration as default values](#using-system-settings-configuration-as-default-values)
+
 # Configuration API Sample
 
 Sample project showing an application of Liferay Configuration API.
