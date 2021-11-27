@@ -130,7 +130,7 @@ Our configuration values are ready to be passed to the portlet's view.jsp. Expla
 
 ### Configuration Action
 
-Now we will create a configuration UI that is accessible by any portlet instance. For that we need to create a component class that extends `DefaultConfigurationAction` and reference our portlet. We reference the portlet on the component annotation with the property `javax.portlet.name`, like this
+Now we will create a configuration UI that is accessible by any portlet instance. For that, we need to create a component class that extends `DefaultConfigurationAction` and reference our portlet. We reference the portlet on the component annotation with the property `javax.portlet.name`, like this
 
 ```java
 @Component(
@@ -180,7 +180,7 @@ The connection between the configuration action and the portlet is ready. If you
 
 ### Portlet Configuration JSP
 
-Now we only need to create this file with our configuration form. It is basically a form that receives our configurations values from the user and submits them to our configuration action. At the start of the JSP, we retrieve the current configuration values from the portlet preferences, in case the user had already submitted this form. This JSP is the minimum you need to make our portlet instance configuration works
+Now we only need to create this file with our configuration form. It is basically a form that receives our configurations values from the user and submits them to our configuration action. At the start of the JSP, we retrieve the current configuration values from the portlet preferences, in case the user had already submitted this form. The second argument of the method `portletPreferences.getValue` is the value to return if the preference is empty (default value). This JSP is the minimum you need to make our portlet instance configuration works
 
 ```jsp
 <%@ include file="./init.jsp" %>
@@ -242,18 +242,6 @@ To make the form a bit more user friendly, add `<%@ taglib uri="http://liferay.c
 <%@ include file="./init.jsp" %>
 <%@page import="com.liferay.portal.kernel.util.Constants"%>
 
-<%
-// getting current preference values or defaults
-String defaultTitle = "welcome";
-String title = portletPreferences.getValue("title", defaultTitle);
-
-String defaultBackgroundColor = "blue";
-String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
-
-String defaultSize = "medium";
-String size = portletPreferences.getValue("size", defaultSize);
-%>
-
 <!-- Our configuration action URL -->
 <liferay-portlet:actionURL portletConfiguration="<%= true %>" var="configurationActionURL" />
 
@@ -302,4 +290,254 @@ String size = portletPreferences.getValue("size", defaultSize);
 
 ### Using Portlet Configuration on the portlet
 
+You can access the previously created portlet configurations the same way we did on the configuration JSP, using the `portlet preferences`.
+
+```java
+public void render(RenderRequest renderRequest, RenderResponse renderResponse)
+        throws IOException, PortletException {
+
+    PortletPreferences portletPreferences = renderRequest.getPreferences();
+
+    String title = portletPreferences.getValue("title", "");
+
+    String backgroundColor = portletPreferences.getValue("backgroundColor", "");
+
+    String size = portletPreferences.getValue("size", "");
+    size = formatSize(size);
+
+    renderRequest.setAttribute("title", title);
+    renderRequest.setAttribute("backgroundColor", backgroundColor);
+    renderRequest.setAttribute("size", size);
+
+    super.render(renderRequest, renderResponse);
+}
+```
+
+Note that we retrieve values from preference both in configuration JSP and at the portlet render method. To avoid duplicated code, we will put this part on the `init.jsp`, as both configuration.jsp and the portlet view.jsp includes it. `init.jsp` changes to this this
+
+```java
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+<%@ taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %>
+
+
+<liferay-theme:defineObjects />
+
+<portlet:defineObjects />
+
+<%
+// getting current preference values or defaults
+String defaultTitle = "welcome";
+String title = portletPreferences.getValue("title", defaultTitle);
+
+String defaultBackgroundColor = "blue";
+String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
+
+String defaultSize = "medium";
+String size = portletPreferences.getValue("size", defaultSize);
+%>
+```
+
+and we can now remove the code to retrieve preference values on the portlet render method.
+
 ### Using system settings Configuration as default values
+
+We created the system settings configuration at the start of the project to be used as the default configuration values to our Welcome Card portlets. To accomplish this, we need to change the two parts of the project where we get our preference values. The first part is at the configuration JSP, the configuration.jsp file. Change the java code at the start to this
+
+```jsp
+<%
+WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration = 
+    (WelcomeCardPortletConfiguration) request.getAttribute(WelcomeCardPortletConfiguration.class.getName());
+
+// getting current preference values or defaults
+String defaultTitle = _welcomeCardPortletConfiguration.title();
+String title = portletPreferences.getValue("title", defaultTitle);
+
+String defaultBackgroundColor =  _welcomeCardPortletConfiguration.backgroundColor();
+String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
+
+String defaultSize =  _welcomeCardPortletConfiguration.size();
+String size = portletPreferences.getValue("size", defaultSize);
+%>
+```
+
+now we are retrieving the default values from the system settings configuration. Note that this code is expecting the configuration to be passed on the request, so we need to pass it at the configuration action. Change the configuration action to
+
+```java
+package com.liferay.simplify.configuration.api.sample.configuration;
+
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.portlet.ConfigurationAction;
+import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.simplify.configuration.api.sample.constants.WelcomeCardPortletKeys;
+
+import java.util.Map;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+import javax.portlet.PortletConfig;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
+
+/*
+ * Class to include parameters in the configuration JSP and handle 
+ * the form submission
+ */
+@Component(
+    // Add this line to use the configuration
+    configurationPid = "com.liferay.simplify.configuration.api.sample.configuration.WelcomeCardPortletConfiguration",
+    configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
+    property = {
+        // makes the connection between this action and the portlet
+        "javax.portlet.name=" + WelcomeCardPortletKeys.WELCOMECARD
+    },
+    service = ConfigurationAction.class
+)
+public class WelcomeCardConfigurationAction extends DefaultConfigurationAction {
+
+    @Override
+    public void processAction(
+            PortletConfig portletConfig, ActionRequest actionRequest,
+            ActionResponse actionResponse)
+        throws Exception {
+
+        // first you get the values from the request
+        String title = ParamUtil.getString(actionRequest, "title");
+        String backgroundColor = ParamUtil.getString(actionRequest, "backgroundColor");
+        String size = ParamUtil.getString(actionRequest, "size");
+        
+        // then you save them
+        setPreference(actionRequest, "title", title);
+        setPreference(actionRequest, "backgroundColor", backgroundColor);
+        setPreference(actionRequest, "size", size);
+
+        super.processAction(portletConfig, actionRequest, actionResponse);
+    }
+
+    @Override
+    public void include(PortletConfig portletConfig, HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse) throws Exception {
+
+        // pass the configuration to configuration.jsp
+        httpServletRequest.setAttribute(
+                WelcomeCardPortletConfiguration.class.getName(),
+                _welcomeCardPortletConfiguration);
+
+        super.include(portletConfig, httpServletRequest, httpServletResponse);
+    }
+
+    /*
+     * The method used to instantiate our configuration field 
+     */
+    @Activate
+    @Modified
+    protected void activate(Map<Object, Object> properties) {
+        _welcomeCardPortletConfiguration = ConfigurableUtil.createConfigurable(
+                    WelcomeCardPortletConfiguration.class, properties);
+    }
+
+    /*
+     * Field used to access configuration values
+     */
+    private volatile WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration;
+}
+```
+
+We will do the same on our Welcome Card portlet. First, get the configuration on view.jsp
+
+```jsp
+<%@page import="com.liferay.simplify.configuration.api.sample.configuration.WelcomeCardPortletConfiguration"%>
+<%@ include file="./init.jsp" %>
+
+<%
+WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration = 
+    (WelcomeCardPortletConfiguration) request.getAttribute(WelcomeCardPortletConfiguration.class.getName());
+
+// getting current preference values or defaults
+String defaultTitle = _welcomeCardPortletConfiguration.title();
+String title = portletPreferences.getValue("title", defaultTitle);
+
+String defaultBackgroundColor =  _welcomeCardPortletConfiguration.backgroundColor();
+String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
+
+String defaultSize =  _welcomeCardPortletConfiguration.size();
+String size = portletPreferences.getValue("size", defaultSize);
+%>
+
+<div class="welcome-card">
+    <div class="welcome-card-wrapper ${size} bg-${backgroundColor}">
+        <h2>${title}</h2>
+    </div>
+</div>
+```
+
+and pass the configuration to `view.jsp` on the render method
+
+```java
+public void render(RenderRequest renderRequest, RenderResponse renderResponse)
+        throws IOException, PortletException {
+    
+    // pass the configuration to view.jsp
+    renderRequest.setAttribute(
+            WelcomeCardPortletConfiguration.class.getName(),
+            _welcomeCardPortletConfiguration);
+    
+    super.render(renderRequest, renderResponse);
+}
+```
+
+The functionality is complete now. To improve it a bit more, we can avoid duplicate code by copying the code to retrieve the preference values to `init.jsp`, as both `view.jsp` and `configuration.jsp` includes it. Remove this part from `view.jsp` and `configuration.jsp`
+
+```jsp
+<%
+WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration = 
+    (WelcomeCardPortletConfiguration) request.getAttribute(WelcomeCardPortletConfiguration.class.getName());
+
+// getting current preference values or defaults
+String defaultTitle = _welcomeCardPortletConfiguration.title();
+String title = portletPreferences.getValue("title", defaultTitle);
+
+String defaultBackgroundColor =  _welcomeCardPortletConfiguration.backgroundColor();
+String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
+
+String defaultSize =  _welcomeCardPortletConfiguration.size();
+String size = portletPreferences.getValue("size", defaultSize);
+%>
+```
+
+and add this to `ìnit.jsp`
+
+```java
+<%
+WelcomeCardPortletConfiguration _welcomeCardPortletConfiguration = 
+    (WelcomeCardPortletConfiguration) request.getAttribute(WelcomeCardPortletConfiguration.class.getName());
+
+String title, backgroundColor, size;
+
+if (_welcomeCardPortletConfiguration != null) {
+    // getting current preference values or defaults
+    String defaultTitle = _welcomeCardPortletConfiguration.title();
+    title = portletPreferences.getValue("title", defaultTitle);
+
+    String defaultBackgroundColor =  _welcomeCardPortletConfiguration.backgroundColor();
+    backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
+
+    String defaultSize =  _welcomeCardPortletConfiguration.size();
+    size = portletPreferences.getValue("size", defaultSize);
+}
+%>
+```
+
+As `init.jsp` is included by all JSP, we need to make sure `_welcomeCardPortletConfiguration` exists, before using it.
