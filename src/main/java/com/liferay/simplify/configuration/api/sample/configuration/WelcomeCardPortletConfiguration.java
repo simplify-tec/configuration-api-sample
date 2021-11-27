@@ -21,7 +21,7 @@ public interface WelcomeCardPortletConfiguration {
 	 * indicates the field type. In this case, it is a String.
 	 */
     @Meta.AD(
-        deflt = "welcome",
+        deflt = "Welcome to my site!",
         required = false
     )
     public String title();

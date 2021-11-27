@@ -42,28 +42,12 @@ public class WelcomeCardPortlet extends MVCPortlet {
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse)
 			throws IOException, PortletException {
 		
-		String title = _welcomeCardPortletConfiguration.title();
-		
-		String backgroundColor = _welcomeCardPortletConfiguration.backgroundColor();
-		
-		String size = _welcomeCardPortletConfiguration.size();
-		size = formatSize(size);
-		
-		renderRequest.setAttribute("title", title);
-		renderRequest.setAttribute("backgroundColor", backgroundColor);
-		renderRequest.setAttribute("size", size);
+		// pass the configuration to view.jsp
+		renderRequest.setAttribute(
+        		WelcomeCardPortletConfiguration.class.getName(),
+        		_welcomeCardPortletConfiguration);
 		
 		super.render(renderRequest, renderResponse);
-	}
-	
-	private static String formatSize(String size) {
-		if ("large".equals(size)) {
-			return "lg";
-		} else if ("small".equals(size)) {
-			return "sm";
-		} else {
-			return "md";
-		}
 	}
 	
 	/*

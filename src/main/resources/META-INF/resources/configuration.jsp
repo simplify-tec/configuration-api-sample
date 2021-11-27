@@ -1,18 +1,6 @@
 <%@ include file="./init.jsp" %>
 <%@page import="com.liferay.portal.kernel.util.Constants"%>
 
-<%
-// getting current preference values or defaults
-String defaultTitle = "welcome";
-String title = portletPreferences.getValue("title", defaultTitle);
-
-String defaultBackgroundColor = "blue";
-String backgroundColor = portletPreferences.getValue("backgroundColor", defaultBackgroundColor);
-
-String defaultSize = "medium";
-String size = portletPreferences.getValue("size", defaultSize);
-%>
-
 <!-- Our configuration action URL -->
 <liferay-portlet:actionURL portletConfiguration="<%= true %>" var="configurationActionURL" />
 

@@ -6,7 +6,7 @@
 
     &-wrapper {
         margin: 0;
-        padding: 10px 10px;
+        padding: 15px 15px;
         border-radius: 10px;
         box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2);
         transition: 0.3s;
@@ -20,33 +20,35 @@
             box-shadow: 0 4px 16px 0 rgba(0,0,0,0.2);
         }
 
-        &.sm {
-            width: 100px;
+        &.small {
+            width: 200px;
         }
 
-        &.md {
-            width: 250px;
+        &.medium {
+            width: 300px;
         }
 
-        &.lg {
+        &.large {
             width: 100%;
         }
 
-        &.red {
-            
+        &.bg-red {
+            background-color: #ec202a;
+            color: white;
         }
 
-        &.blue {
-            
+        &.bg-blue {
+            background-color: #0b5fff;
+            color: white;
         }
 
-        &.white {
+        &.bg-white {
             background-color: #fff;
+            color: #181A1B;
         }
 
         h2 {
             margin: 0;
-            color: #181A1B;
         }
     }
 }
