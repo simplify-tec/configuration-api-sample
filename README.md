@@ -3,6 +3,8 @@
   - [The project](#the-project)
   - [How to create a configuration](#how-to-create-a-configuration)
     - [The annotations](#the-annotations)
+      - [Meta.OCD:](#metaocd)
+      - [Meta.AD:](#metaad)
   - [Calling the configuration on the portlet](#calling-the-configuration-on-the-portlet)
   - [Creating portlet configuration](#creating-portlet-configuration)
     - [Configuration Action](#configuration-action)
@@ -16,33 +18,34 @@ Sample project showing an application of Liferay Configuration API.
 
 ## Configuration API
 
-If you are a back-end developer, you will probably make a lot of components, like portlets or gogo commands. Sometimes you'll want some characteristics of a component to be configurable by a portal user, in a way he doesn't have to go into Java code to configure it. That's when Configuration API comes into play. With it, you can create a set of configurable values to be used in any component you want. You can also scope it by system (throughout the system), virtual instance (company), site (group), or portlet instance (if your component is a portlet). [talk more about scopes (?)]
+If you are a back-end developer, you'll be making lots of components, like portlets or gogo commands.Sometimes you'll want some of its aspects to be configurable by a portal user, in a way that he doesn't need to go into any Java code to do it. That's when Configuration API comes into play. It lets you create a set of configurable values to be used in any OSGi component you want. And this is all done with many diferent configuration scopes for you to choose [talk more about scopes in the article].
+
 
 ## The project
 
 In this project, we will create a module with a portlet as an example. It will be a welcome card with a configurable title, background color, and size. This configurations values will have the scope of system and portlet instance.
-[show two different photos of the portlet]
+[show two different photos of the portlet; explain what scopes are]
 
-In practice, the configuration values scoped by system will serve only as default values for the portlet, as you can change them by setting portlet instance configurations per each instance.
+In practice, the configuration values scoped by system will only serve as default values for the portlet, as you can change them by setting portlet instance configurations per each instance. [I think this part is a little complex]
 
 ## How to create a configuration
 
 The first step is to create an interface that specifies all the configuration variables, their respective types and their scope. The default scope is system.
 
-This interface can be created anywhere in the module, but we've followed Liferay's pattern and put it on a folder called *configuration* with the name *[portlet name]Configuration*, in this case, it is *WelcomeCardPortletConfiguration*.
-[talk about categorization (?)]. You must use annotations from *Meta* class to indicate OSGI this interface is a specifying a configuration. To use this class, insert this line on your module's *build.gradle*
+This interface can be created anywhere in the module, but we are following Liferay's pattern and putting it in a folder called `configuration` with the name `[portlet name]Configuration`, in this case, it is `WelcomeCardPortletConfiguration`.
+[talk about categorization (?)]. You must use the annotations from `Meta` class to indicate to OSGI that this interface is specifying a configuration. To use this class, insert the following lines in your module's `build.gradle`
 
     compile group: "biz.aQute.bnd", name: "biz.aQute.bndlib"
     compileOnly group: "com.liferay", name: "com.liferay.portal.configuration.metatype.api"
 
 
-You also need to add this line to *bnd.bnd* so bnd knows your module is using configurations.
+You also need to add this line to `bnd.bnd` so bnd knows your module is using configurations.
 
     -metatype: *
-
+---
 ### The annotations
 
-**Meta.OCD**:
+#### Meta.OCD:
 
 ```java
 @Meta.OCD(
@@ -54,7 +57,7 @@ public interface WelcomeCardPortletConfiguration {
 
 Where you set some properties of your configuration in general. The most important one is **id**. It is used by OSGI to identify your configuration. You should always use the interface's *package* plus its *name* preceded by a dot as your **id**.
 
-**Meta.AD**:
+#### Meta.AD:
 
 ```java
 @Meta.AD(
