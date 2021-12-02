@@ -46,7 +46,6 @@ You also need to add this line to `bnd.bnd` so bnd knows your module is using co
 ### The annotations
 
 #### Meta.OCD:
-
 ```java
 @Meta.OCD(
     id = "com.liferay.simplify.configuration.api.sample.configuration.WelcomeCardPortletConfiguration",
@@ -54,11 +53,9 @@ You also need to add this line to `bnd.bnd` so bnd knows your module is using co
 )
 public interface WelcomeCardPortletConfiguration {
 ```
-
-Where you set some properties of your configuration in general. The most important one is **id**. It is used by OSGI to identify your configuration. You should always use the interface's *package* plus its *name* preceded by a dot as your **id**.
+Where you set some general properties of your configuration. The most important one is the `id`. It is used by OSGI to identify your configuration. You should always use the interface's `package` concatenated with its `name` preceded by a dot as your `id`.
 
 #### Meta.AD:
-
 ```java
 @Meta.AD(
     deflt = "blue",
@@ -66,11 +63,10 @@ Where you set some properties of your configuration in general. The most importa
 )
 public String backgroundColor();
 ```
-
 Specifies the properties of a configuration field. The interface method specifies the field itself, being its type the same as the return type of the method. In our case, we have the configuration fields of *String* type. *deflt* specifies the default value.
 This annotation has various properties and you can see what each annotation attribute means by inspecting the `aQute.bnd.annotation.metatype.Meta` interface.
 
-Now that you've created your interface, Liferay will automatically generate an UI where you can set these configuration variables, you only need to deploy this module. After deploying it, go to **Control Panel > System Settings > Third Party > welcome-card-portlet-configuration**. [talk about language.properties (?)].
+Now that you've created your `Configuration API` interface, you can deploy its module and Liferay will automatically generate an UI where you can set these configuration variables. This UI is located in `Control Panel > System Settings > Third Party > welcome-card-portlet-configuration`. [talk about language.properties (?)].
 
 ![Welcome Card System Configuration](images/system-settings-configuration.png)
 
